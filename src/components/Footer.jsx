@@ -75,8 +75,8 @@ const Footer = () => {
                   fontWeight: '500', transition: 'all 0.15s ease',
                   textDecoration: 'none',
                 }}
-                onMouseOver={(e) => e.target.style.color = 'var(--gold)'}
-                onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.5)'}
+                  onMouseOver={(e) => e.target.style.color = 'var(--gold)'}
+                  onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.5)'}
                 >
                   {link.label}
                 </Link>
@@ -96,9 +96,9 @@ const Footer = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {[
                 { icon: <Mail size={14} />, text: 'support@lemonmart.com' },
-                { icon: <Phone size={14} />, text: '+91-9876-543-210' },
+                { icon: <Phone size={14} />, text: '+91-6303-143-435' },
                 { icon: <Clock size={14} />, text: '9 AM - 6 PM IST' },
-                { icon: <MapPin size={14} />, text: 'Mumbai, India' },
+                { icon: <MapPin size={14} />, text: 'Podalakur,Nellore, AP, India' },
               ].map((item, i) => (
                 <div key={i} style={{
                   display: 'flex', alignItems: 'center', gap: '8px',
@@ -127,8 +127,8 @@ const Footer = () => {
                   fontWeight: '500', textDecoration: 'none',
                   transition: 'all 0.15s ease',
                 }}
-                onMouseOver={(e) => e.target.style.color = 'var(--gold)'}
-                onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.5)'}
+                  onMouseOver={(e) => e.target.style.color = 'var(--gold)'}
+                  onMouseOut={(e) => e.target.style.color = 'rgba(255,255,255,0.5)'}
                 >
                   {text}
                 </a>
