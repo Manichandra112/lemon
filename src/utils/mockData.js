@@ -81,8 +81,8 @@ export const initializeMockData = () => {
       },
       {
         id: 2,
-        email: "admin@example.com",
-        password: "admin123",
+        email: "admin@gmail.com",
+        password: "Admin@123",
         role: "admin",
         name: "Admin User",
         phone: "9123456789",
