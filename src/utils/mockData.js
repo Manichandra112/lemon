@@ -27,7 +27,7 @@ export const mockProducts = [
     weight: "1kg",
     price: 80,
     quantity: 12,
-    lemonCount: "8-12 lemons",
+    lemonCount: "30-36 lemons",
     description: "Premium quality medium-sized lemons with excellent juice content. Best for making fresh lemonade and cooking.",
     image: "/medium_lemons.png",
     nutritionInfo: {
