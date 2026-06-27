@@ -331,7 +331,7 @@ const LandingPage = () => {
                 onClick={() => setSelectedProduct(product)}
               >
                 <div className="category-card-icon" style={{ width: '72px', height: '72px' }}>
-                  {product.image.startsWith('/') ? (
+                  {(product.image?.startsWith('/') || product.image?.startsWith('data:image/') || product.image?.startsWith('http://') || product.image?.startsWith('https://')) ? (
                     <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'var(--radius-md)' }} />
                   ) : (
                     <span style={{ fontSize: '2rem' }}>{product.image}</span>

@@ -44,7 +44,7 @@ const ProductDetailModal = ({ product, onClose }) => {
           position: 'relative', width: '100%', aspectRatio: '4/3',
           overflow: 'hidden', background: 'var(--surface-secondary)',
         }}>
-          {product.image.startsWith('/') ? (
+          {(product.image?.startsWith('/') || product.image?.startsWith('data:image/') || product.image?.startsWith('http://') || product.image?.startsWith('https://')) ? (
             <img src={product.image} alt={product.name} style={{
               width: '100%', height: '100%', objectFit: 'cover',
             }} />

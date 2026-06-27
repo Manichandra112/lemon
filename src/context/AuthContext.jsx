@@ -29,8 +29,7 @@ export const AuthProvider = ({ children }) => {
               email: session.user.email,
               role: session.user.user_metadata?.role || 'customer',
               name: session.user.user_metadata?.name || '',
-              phone: session.user.user_metadata?.phone || '',
-              address: ''
+              phone: session.user.user_metadata?.phone || ''
             };
             setAuthUser(fallbackProfile);
           }
@@ -61,8 +60,7 @@ export const AuthProvider = ({ children }) => {
             email: session.user.email,
             role: session.user.user_metadata?.role || 'customer',
             name: session.user.user_metadata?.name || '',
-            phone: session.user.user_metadata?.phone || '',
-            address: ''
+            phone: session.user.user_metadata?.phone || ''
           });
         }
       } else {
@@ -105,8 +103,7 @@ export const AuthProvider = ({ children }) => {
             email: data.user.email,
             role: data.user.user_metadata?.role || 'customer',
             name: data.user.user_metadata?.name || '',
-            phone: data.user.user_metadata?.phone || '',
-            address: ''
+            phone: data.user.user_metadata?.phone || ''
           };
           
           const { data: createdProfile } = await supabase
@@ -145,32 +142,65 @@ export const AuthProvider = ({ children }) => {
       }
 
       if (data?.user) {
-        // 2. Create the user profile in the public 'users' table
-        const newProfile = {
-          id: data.user.id,
+        const signedUpUser = data.user;
+        const fallbackProfile = {
+          id: signedUpUser.id,
           email,
           role: role || 'customer',
           name,
-          phone,
-          address: ''
+          phone
         };
 
+        const { data: sessionData } = await supabase.auth.getSession();
+        const session = sessionData?.session;
+
+        if (!session?.user) {
+          // Email confirmation required or session not active yet.
+          return { success: true, user: fallbackProfile, needsEmailConfirmation: true };
+        }
+
+        // Create the user profile in the public 'users' table only when auth session is active
         const { data: createdProfile, error: profileError } = await supabase
           .from('users')
-          .insert([newProfile])
+          .insert([fallbackProfile])
           .select()
           .single();
 
         if (profileError) {
           console.error('Error creating public profile:', profileError);
+          return { success: false, error: profileError.message || 'Unable to create user profile' };
         }
 
-        const finalUser = createdProfile || newProfile;
-        setAuthUser(finalUser);
-        return { success: true, user: finalUser };
+        setAuthUser(createdProfile);
+        return { success: true, user: createdProfile };
       }
 
       return { success: false, error: 'Signup failed' };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const updateProfile = async (updatedData) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user) {
+        return { success: false, error: 'No active session found' };
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .update(updatedData)
+        .eq('id', session.user.id)
+        .select()
+        .single();
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      setAuthUser(data);
+      return { success: true, user: data };
     } catch (err) {
       return { success: false, error: err.message };
     }
@@ -190,6 +220,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     signup,
+    updateProfile,
     logout,
     isAuthenticated: !!authUser,
     isAdmin: authUser?.role === 'admin',

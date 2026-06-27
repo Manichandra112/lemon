@@ -21,7 +21,7 @@ const SignupPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     if (!formData.email || !formData.password || !formData.name || !formData.phone) {
@@ -38,10 +38,19 @@ const SignupPage = () => {
     }
     setLoading(true);
     try {
-      const result = signup(formData.email, formData.password, formData.name, formData.phone, formData.role);
+      const result = await signup(formData.email, formData.password, formData.name, formData.phone, formData.role);
       if (result.success) {
-        showToast('Account created! Welcome to LemonMart 🍋', 'success');
-        navigate('/dashboard');
+        if (result.needsEmailConfirmation) {
+          showToast('Account created. Please confirm your email before logging in.', 'success');
+          navigate('/login');
+        } else {
+          showToast('Account created! Welcome to LemonMart 🍋', 'success');
+          if (result.user.role === 'admin') {
+            navigate('/admin');
+          } else {
+            navigate('/dashboard');
+          }
+        }
       } else {
         setError(result.error);
       }

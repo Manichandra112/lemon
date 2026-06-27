@@ -27,6 +27,7 @@ const CustomerDashboard = () => {
     { id: 'small', label: 'Small Pack', emoji: '🟡' },
     { id: 'medium', label: 'Medium Pack', emoji: '🟠' },
     { id: 'large', label: 'Large Pack', emoji: '🔴' },
+    { id: 'heavy-large', label: 'Heavy Large Pack', emoji: '🟣' },
   ];
 
   return (

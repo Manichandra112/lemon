@@ -14,12 +14,12 @@ const LoginPage = () => {
   const { login } = useAuth();
   const { showToast } = useToast();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const result = login(email, password);
+      const result = await login(email, password);
       if (result.success) {
         showToast(`Welcome back, ${result.user.name}!`, 'success');
         if (result.user.role === 'admin') {

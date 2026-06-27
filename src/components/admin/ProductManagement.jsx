@@ -3,11 +3,19 @@ import { useData } from '../../context/DataContext';
 import { useToast } from '../../context/ToastContext';
 import { Edit2, Trash2, Plus, X, Image, Info } from 'lucide-react';
 
+const presetImages = [
+  { label: 'Woven Basket (Small Pack)', value: '/small_lemons.png' },
+  { label: 'Kraft Box (Medium Pack)', value: '/medium_lemons.png' },
+  { label: 'Wooden Crate (Large Pack)', value: '/large_lemons.png' },
+  { label: 'Premium Barrel (Heavy Large Pack)', value: '/heavy_large_lemons.svg' }
+];
+
 const ProductManagement = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useData();
   const { showToast, showConfirm } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [imageType, setImageType] = useState('preset');
   const [formData, setFormData] = useState({
     name: '',
     type: 'small',
@@ -21,6 +29,21 @@ const ProductManagement = () => {
     fiber: '2.8g',
     calories: '29 per 100g'
   });
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('Image size should be less than 2MB', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,6 +101,7 @@ const ProductManagement = () => {
     });
     setShowForm(false);
     setEditingId(null);
+    setImageType('preset');
   };
 
   const handleEdit = (product) => {
@@ -96,6 +120,15 @@ const ProductManagement = () => {
     });
     setEditingId(product.id);
     setShowForm(true);
+
+    const img = product.image || '/small_lemons.png';
+    if (presetImages.some(p => p.value === img)) {
+      setImageType('preset');
+    } else if (img.startsWith('data:image/')) {
+      setImageType('upload');
+    } else {
+      setImageType('custom');
+    }
   };
 
   const handleDelete = (id) => {
@@ -105,11 +138,7 @@ const ProductManagement = () => {
     });
   };
 
-  const presetImages = [
-    { label: 'Woven Basket (Small Pack)', value: '/small_lemons.png' },
-    { label: 'Kraft Box (Medium Pack)', value: '/medium_lemons.png' },
-    { label: 'Wooden Crate (Large Pack)', value: '/large_lemons.png' }
-  ];
+  // presetImages array is now defined globally at the top of the file
 
   return (
     <div style={{ animation: 'fadeIn 0.4s ease' }}>
@@ -183,6 +212,7 @@ const ProductManagement = () => {
                   <option value="small">Small Pack</option>
                   <option value="medium">Medium Pack</option>
                   <option value="large">Large Pack</option>
+                  <option value="heavy-large">Heavy Large Pack</option>
                 </select>
               </div>
 
@@ -238,43 +268,16 @@ const ProductManagement = () => {
 
               {/* Image selection */}
               <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                <label className="form-label">Product Image Preset</label>
+                <label className="form-label">Product Image Option</label>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                  {presetImages.map((img) => (
-                    <label 
-                      key={img.value} 
-                      style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '6px', 
-                        fontSize: '0.8125rem',
-                        background: formData.image === img.value ? 'var(--primary-tint)' : 'var(--surface-secondary)',
-                        border: formData.image === img.value ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
-                        padding: '8px 12px',
-                        borderRadius: 'var(--radius-sm)',
-                        cursor: 'pointer',
-                        fontWeight: '600'
-                      }}
-                    >
-                      <input 
-                        type="radio" 
-                        name="image" 
-                        value={img.value}
-                        checked={formData.image === img.value}
-                        onChange={handleChange}
-                        style={{ display: 'none' }}
-                      />
-                      <span>{img.label}</span>
-                    </label>
-                  ))}
                   <label 
                     style={{ 
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '6px', 
                       fontSize: '0.8125rem',
-                      background: !presetImages.some(p => p.value === formData.image) ? 'var(--primary-tint)' : 'var(--surface-secondary)',
-                      border: !presetImages.some(p => p.value === formData.image) ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
+                      background: imageType === 'preset' ? 'var(--primary-tint)' : 'var(--surface-secondary)',
+                      border: imageType === 'preset' ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
                       padding: '8px 12px',
                       borderRadius: 'var(--radius-sm)',
                       cursor: 'pointer',
@@ -283,24 +286,130 @@ const ProductManagement = () => {
                   >
                     <input 
                       type="radio" 
-                      name="image" 
-                      value="custom"
-                      checked={!presetImages.some(p => p.value === formData.image)}
-                      onChange={() => setFormData(prev => ({ ...prev, image: '' }))}
+                      name="imageType" 
+                      value="preset"
+                      checked={imageType === 'preset'}
+                      onChange={() => {
+                        setImageType('preset');
+                        setFormData(prev => ({ ...prev, image: '/small_lemons.png' }));
+                      }}
                       style={{ display: 'none' }}
                     />
-                    <span>Custom URL</span>
+                    <span>Preset Images</span>
+                  </label>
+
+                  <label 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      fontSize: '0.8125rem',
+                      background: imageType === 'upload' ? 'var(--primary-tint)' : 'var(--surface-secondary)',
+                      border: imageType === 'upload' ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    <input 
+                      type="radio" 
+                      name="imageType" 
+                      value="upload"
+                      checked={imageType === 'upload'}
+                      onChange={() => {
+                        setImageType('upload');
+                        setFormData(prev => ({ ...prev, image: '' }));
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                    <span>Upload from Device</span>
+                  </label>
+
+                  <label 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '6px', 
+                      fontSize: '0.8125rem',
+                      background: imageType === 'custom' ? 'var(--primary-tint)' : 'var(--surface-secondary)',
+                      border: imageType === 'custom' ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-sm)',
+                      cursor: 'pointer',
+                      fontWeight: '600'
+                    }}
+                  >
+                    <input 
+                      type="radio" 
+                      name="imageType" 
+                      value="custom"
+                      checked={imageType === 'custom'}
+                      onChange={() => {
+                        setImageType('custom');
+                        setFormData(prev => ({ ...prev, image: '' }));
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                    <span>Custom URL / Link</span>
                   </label>
                 </div>
-                {!presetImages.some(p => p.value === formData.image) && (
-                  <input
-                    type="text"
-                    className="form-input"
-                    name="image"
-                    placeholder="Enter image URL (e.g. /custom_image.png or external link)"
-                    value={formData.image}
-                    onChange={handleChange}
-                  />
+
+                {imageType === 'preset' && (
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '8px', marginBottom: '8px' }}>
+                    {presetImages.map((img) => (
+                      <button
+                        key={img.value}
+                        type="button"
+                        onClick={() => setFormData(prev => ({ ...prev, image: img.value }))}
+                        style={{
+                          border: formData.image === img.value ? '2px solid var(--primary)' : '1px solid var(--border)',
+                          borderRadius: 'var(--radius-sm)',
+                          background: 'none',
+                          padding: '6px 10px',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          color: formData.image === img.value ? 'var(--primary-dark)' : 'var(--text-secondary)'
+                        }}
+                      >
+                        {img.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {imageType === 'upload' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageFileChange}
+                      className="form-input"
+                      style={{ padding: '6px' }}
+                    />
+                    {formData.image && formData.image.startsWith('data:image/') && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                        <div style={{ width: '50px', height: '50px', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border)' }}>
+                          <img src={formData.image} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--success)', fontWeight: '700' }}>✓ Image loaded from device</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {imageType === 'custom' && (
+                  <div style={{ marginTop: '8px' }}>
+                    <input
+                      type="text"
+                      className="form-input"
+                      name="image"
+                      placeholder="Enter image URL (e.g., https://example.com/lemon.jpg)"
+                      value={formData.image}
+                      onChange={handleChange}
+                    />
+                  </div>
                 )}
               </div>
 
@@ -416,7 +525,7 @@ const ProductManagement = () => {
                         justifyContent: 'center',
                         backgroundColor: 'var(--surface-secondary)'
                       }}>
-                        {product.image?.startsWith('/') ? (
+                        {(product.image?.startsWith('/') || product.image?.startsWith('data:image/') || product.image?.startsWith('http://') || product.image?.startsWith('https://')) ? (
                           <img src={product.image} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                           <span style={{ fontSize: '1.25rem' }}>{product.image || '🍋'}</span>

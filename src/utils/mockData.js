@@ -59,6 +59,26 @@ export const mockProducts = [
       { user: "Hotel XYZ", rating: 5, comment: "Perfect for restaurant use" },
       { user: "Juice Shop", rating: 5, comment: "Best quality, consistent supply" }
     ]
+  },
+  {
+    id: 4,
+    name: "Heavy Large Lemons Pack",
+    type: "heavy-large",
+    weight: "2kg",
+    price: 180,
+    quantity: 6,
+    lemonCount: "5-7 lemons",
+    description: "Extra-large lemons with maximum juice and premium quality, ideal for large kitchens and special events.",
+    image: "/heavy_large_lemons.svg",
+    nutritionInfo: {
+      vitaminC: "53mg per 100g",
+      fiber: "2.8g",
+      calories: "29 per 100g"
+    },
+    reviews: [
+      { user: "Cafe Delight", rating: 5, comment: "Ideal for large batches and catering." },
+      { user: "Family Store", rating: 5, comment: "Excellent size and freshness." }
+    ]
   }
 ];
 

@@ -1,14 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Menu, X, LogOut, Shield, Search, MapPin, ChevronDown, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import { supabase } from '../lib/supabase';
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { authUser, logout, isAdmin, isCustomer } = useAuth();
   const { getTotalItems } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [defaultAddressText, setDefaultAddressText] = useState('Set location');
+
+  useEffect(() => {
+    const fetchDefaultAddress = async () => {
+      if (authUser) {
+        try {
+          const { data, error } = await supabase
+            .from('addresses')
+            .select('city, state')
+            .eq('userId', authUser.id)
+            .eq('is_default', true)
+            .maybeSingle();
+
+          if (data) {
+            setDefaultAddressText(`${data.city}, ${data.state}`);
+          } else {
+            // If no default, fetch the first available address
+            const { data: firstAddr } = await supabase
+              .from('addresses')
+              .select('city, state')
+              .eq('userId', authUser.id)
+              .limit(1);
+
+            if (firstAddr && firstAddr.length > 0) {
+              setDefaultAddressText(`${firstAddr[0].city}, ${firstAddr[0].state}`);
+            } else {
+              setDefaultAddressText('Set location');
+            }
+          }
+        } catch (err) {
+          console.error('Error fetching default location for Navbar:', err);
+          setDefaultAddressText('Set location');
+        }
+      } else {
+        setDefaultAddressText('Set location');
+      }
+    };
+
+    fetchDefaultAddress();
+  }, [authUser]);
 
   const handleLogout = () => {
     logout();
@@ -77,7 +118,7 @@ const Navbar = () => {
                 <MapPin size={14} color="var(--primary)" />
                 <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>Deliver to</span>
                 <span className="truncate" style={{ maxWidth: '120px' }}>
-                  {authUser.address || 'Set location'}
+                  {defaultAddressText}
                 </span>
                 <ChevronDown size={14} />
               </div>
@@ -171,16 +212,18 @@ const Navbar = () => {
                     background: 'var(--surface-secondary)',
                     border: '1px solid var(--border-light)',
                   }}>
-                    <div style={{
-                      width: '28px', height: '28px', borderRadius: '50%',
-                      background: 'var(--primary-tint)', display: 'flex',
-                      alignItems: 'center', justifyContent: 'center',
-                    }}>
-                      <User size={14} color="var(--primary)" />
-                    </div>
-                    <span style={{ fontSize: '0.8125rem', fontWeight: '600', color: 'var(--text-primary)', maxWidth: '80px' }} className="truncate">
-                      {authUser.name?.split(' ')[0]}
-                    </span>
+                    <Link to="/profile" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none', color: 'inherit' }}>
+                      <div style={{
+                        width: '28px', height: '28px', borderRadius: '50%',
+                        background: 'var(--primary-tint)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <User size={14} color="var(--primary)" />
+                      </div>
+                      <span style={{ fontSize: '0.8125rem', fontWeight: '600', color: 'var(--text-primary)', maxWidth: '80px' }} className="truncate">
+                        {authUser.name?.split(' ')[0]}
+                      </span>
+                    </Link>
                     <button
                       onClick={handleLogout}
                       style={{
@@ -263,6 +306,9 @@ const Navbar = () => {
                   <Link to="/cart" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
                     🛍️ Cart {getTotalItems() > 0 && `(${getTotalItems()})`}
                   </Link>
+                  <Link to="/profile" onClick={() => setMenuOpen(false)} className="mobile-nav-link">
+                    👤 My Profile
+                  </Link>
                 </>
               )}
               {isAdmin && (
@@ -282,10 +328,10 @@ const Navbar = () => {
                       }}>
                         <User size={16} color="var(--primary)" />
                       </div>
-                      <div>
+                      <Link to="/profile" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none', color: 'inherit' }}>
                         <div style={{ fontSize: '0.875rem', fontWeight: '700' }}>{authUser.name}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{authUser.email}</div>
-                      </div>
+                      </Link>
                     </div>
                     <button onClick={handleLogout} className="btn btn-outline btn-small" style={{ gap: '4px' }}>
                       <LogOut size={14} /> Logout

@@ -17,6 +17,7 @@ import CustomerDashboard from './pages/CustomerDashboard';
 import CartPage from './pages/CartPage';
 import OrdersPage from './pages/OrdersPage';
 import AdminDashboard from './pages/AdminDashboard';
+import ProfilePage from './pages/ProfilePage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, requiredRole }) => {
@@ -71,6 +72,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute requiredRole="customer">
                 <OrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />
