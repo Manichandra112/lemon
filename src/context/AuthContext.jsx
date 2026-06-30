@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
           .select('*')
           .eq('id', session.user.id)
           .single();
-        
+
         if (profile) {
           setAuthUser(profile);
         } else {
@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }) => {
             name: data.user.user_metadata?.name || '',
             phone: data.user.user_metadata?.phone || ''
           };
-          
+
           const { data: createdProfile } = await supabase
             .from('users')
             .insert([newProfile])

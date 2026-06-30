@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Users, Package, ShoppingCart, DollarSign, ArrowUpRight } from 'lucide-react';
 import { useData } from '../../context/DataContext';
-import { getUsers } from '../../utils/localStorage';
+import { supabase } from '../../lib/supabase';
 
 const AdminOverview = () => {
   const { orders, products } = useData();
-  const users = getUsers();
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*');
+        if (error) throw error;
+        setUsers(data || []);
+      } catch (err) {
+        console.error('Error fetching users in AdminOverview:', err);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
   const totalCustomers = users.filter(u => u.role === 'customer').length;

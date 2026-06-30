@@ -1,15 +1,39 @@
-import React, { useState } from 'react';
-import { getUsers } from '../../utils/localStorage';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { Search, Shield, User, CheckCircle } from 'lucide-react';
 
 const UserManagement = () => {
-  const users = getUsers();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState('all');
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setUsers(data || []);
+      } catch (error) {
+        console.error('Error fetching users from Supabase:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const name = user.name || '';
+    const email = user.email || '';
+    const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = filterRole === 'all' || user.role === filterRole;
     return matchesSearch && matchesRole;
   });
@@ -72,7 +96,11 @@ const UserManagement = () => {
 
       {/* Users Table */}
       <div className="card" style={{ border: '1px solid var(--border-light)', padding: 0, overflow: 'hidden', marginBottom: '24px' }}>
-        {filteredUsers.length === 0 ? (
+        {loading ? (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>
+            Loading registry database from Supabase...
+          </p>
+        ) : filteredUsers.length === 0 ? (
           <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>
             No registered users match your search criteria.
           </p>

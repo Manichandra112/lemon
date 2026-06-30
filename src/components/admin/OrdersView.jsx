@@ -1,12 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
-import { getUsers } from '../../utils/localStorage';
+import { supabase } from '../../lib/supabase';
 import { useToast } from '../../context/ToastContext';
 import { ChevronDown, Package, User, MapPin, CheckCircle, Clock, Truck } from 'lucide-react';
 
 const OrdersView = () => {
   const { orders, updateOrderStatus } = useData();
-  const users = getUsers();
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*');
+        if (error) throw error;
+        setUsers(data || []);
+      } catch (err) {
+        console.error('Error fetching users in OrdersView:', err);
+      }
+    };
+    fetchUsers();
+  }, []);
   const { showToast } = useToast();
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
